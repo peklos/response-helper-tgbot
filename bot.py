@@ -6,6 +6,7 @@ import aiohttp
 import sqlite3
 from dotenv import load_dotenv
 
+from aiohttp import web
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -722,11 +723,36 @@ async def on_shutdown():
     logger.info("🛑 Бот остановлен")
 
 
+async def health_check(request):
+    """Endpoint для проверки что бот жив"""
+    return web.Response(text="Bot is running!")
+
+
+async def start_web_server():
+    """Запуск веб-сервера для Render"""
+    app = web.Application()
+    app.router.add_get('/', health_check)
+    app.router.add_get('/health', health_check)
+
+    runner = web.AppRunner(app)
+    await runner.setup()
+
+    port = int(os.getenv('PORT', 8080))
+    site = web.TCPSite(runner, '0.0.0.0', port)
+    await site.start()
+    logger.info(f"🌐 Веб-сервер запущен на порту {port}")
+
+
 async def main():
     """Главная функция запуска бота"""
     try:
         await on_startup()
-        await dp.start_polling(bot, on_shutdown=on_shutdown)
+
+        # Запускаем веб-сервер и бота параллельно
+        await asyncio.gather(
+            start_web_server(),
+            dp.start_polling(bot, on_shutdown=on_shutdown)
+        )
     except KeyboardInterrupt:
         logger.info("⚠️ Бот остановлен пользователем")
     except Exception as e:
