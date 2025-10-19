@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+*.db
+kwork_bot.db
+venv/
+.vscode/
+.idea/
