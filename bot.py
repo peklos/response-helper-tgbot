@@ -636,19 +636,27 @@ async def handle_vacancy(message: types.Message, state: FSMContext):
             title = title_match.group(1).strip()
             text = text_match.group(1).strip()
 
-            # Отправляем отформатированное сообщение с возможностью копирования
-            formatted_response = (
+            # Отправляем НАЗВАНИЕ отдельным сообщением
+            await message.answer(
                 "✅ <b>Отклик готов!</b>\n\n"
                 "📌 <b>НАЗВАНИЕ:</b>\n"
-                f"<code>{title}</code>\n\n"
+                f"<code>{title}</code>",
+                parse_mode="HTML"
+            )
+            
+            # Небольшая задержка между сообщениями
+            await asyncio.sleep(0.3)
+            
+            # Отправляем ТЕКСТ ОТКЛИКА отдельным сообщением
+            await message.answer(
                 "📝 <b>ТЕКСТ ОТКЛИКА:</b>\n"
                 f"<code>{text}</code>\n\n"
-                "💡 <i>Нажмите на текст, чтобы скопировать</i>"
+                "💡 <i>Нажмите на текст, чтобы скопировать</i>",
+                parse_mode="HTML"
             )
-            await message.answer(formatted_response, parse_mode="HTML")
         else:
             # Если не удалось распарсить, отправляем как есть
-            await message.answer(response)
+            await message.answer(f"<code>{response}</code>", parse_mode="HTML")
 
         logger.info(f"✅ Отклик успешно создан для пользователя {user_id}")
 
